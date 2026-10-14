@@ -1,13 +1,14 @@
 /** Vercel geocoding for Brazilian streets; precise names win over nearest POIs. */
 import { nominatimToGeocodeResult } from '../src/nominatimGeocode.js';
 import { rankBrazilCandidates } from '../src/search/brazilPrecision.js';
+import { PUBLIC_BRAZIL_APIS } from '../src/config/publicBrazilApis.js';
 const cache = new Map();
 let nextAt = 0;
 let serial = Promise.resolve();
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const UA = 'God-Eye-Brasil/1.2 (+https://github.com/W1CAPITAL/God-Eye)';
 function provider() {
-  const raw = process.env.NOMINATIM_SEARCH_URL || 'https://nominatim.openstreetmap.org/search';
+  const raw = process.env.NOMINATIM_SEARCH_URL || PUBLIC_BRAZIL_APIS.geography.nominatim;
   const url = new URL(raw);
   if (url.protocol!=='https:' || url.username || url.password || url.search || url.hash) throw new Error('Invalid provider');
   return url;
