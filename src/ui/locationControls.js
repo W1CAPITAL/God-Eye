@@ -1,4 +1,5 @@
 import { locationMiniStatus } from '../locationStatus.js';
+import { attachBrazilMapServices } from './brazilMapServices.js';
 const POI_KEYS = ['Q', 'W', 'E', 'R', 'T'];
 
 /** Location DOM, keyboard handling and pending row animation over supplied actions. */
@@ -11,6 +12,7 @@ export class LocationControls {
     onPoi,
     onSearch,
     onReset,
+    getMapLocation = () => null,
     doc = document,
     requestFrame = (callback) => requestAnimationFrame(callback),
     cancelFrame = (id) => cancelAnimationFrame(id),
@@ -58,6 +60,12 @@ export class LocationControls {
       elements.search.classList.toggle('expanded');
       if (elements.search.classList.contains('expanded'))
         elements.search.focus();
+    });
+    this.detachBrazilServices = attachBrazilMapServices({
+      search: elements.search,
+      container: elements.search?.closest?.('.dock-popover-content') || null,
+      doc,
+      getMapLocation,
     });
     this.bind(elements.search, 'keydown', (event) => {
       if (event.key === 'Enter') void onSearch(elements.search.value);
@@ -158,6 +166,7 @@ export class LocationControls {
       ...this.removers.splice(0),
     ])
       remove();
+    this.detachBrazilServices?.();
     this.orbitIndicator?.remove();
   }
 }
