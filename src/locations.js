@@ -1,4 +1,5 @@
 import { isUnavailableCapability } from './sources/capability.js';
+import { isBrazilianAddress } from './search/brazilGeocoder.js';
 import { createOverpassFeatureSource } from './sources/overpassFeatures.js';
 import { applicationServices } from './services/application.js';
 import * as Cesium from 'cesium';
@@ -841,7 +842,7 @@ export async function searchAndFlyTo(viewer, query, options = {}) {
   // geocoder read too broadly; a typed coordinate or a bundled name has no
   // ambiguity to rescue, and letting a nearby Places hit win would send an
   // operator who typed "43.1731, -79.0384" to whatever is closest instead.
-  const recovered = result?.exact
+  const recovered = result?.exact || isBrazilianAddress(query)
     ? null
     : await (options.recoverNearView || placesNearViewRecovery)(
         viewer,
