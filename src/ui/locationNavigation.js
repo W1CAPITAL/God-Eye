@@ -197,19 +197,25 @@ export class LocationNavigation {
 
     const isCityChanged =
       this._activeLocationId && this._activeLocationId !== cityId;
+    // São Paulo is an entire city, not a synonym for Praça da Sé.
+    // Frame its curated city bounds; individual POI buttons still fly close.
+    const cityOverview = cityId === 'saoPaulo' && !!CITY_POIS[cityId]?.viewBounds;
     const result = this._flyWithTransition(!!isCityChanged, (hooks) =>
-      flyToPresetLocation(this.viewer, cityId, hooks),
+      flyToPresetLocation(
+        this.viewer, cityId,
+        cityOverview ? { ...hooks, viewMode: 'overview' } : hooks,
+      ),
     );
     if (result === false) return;
     this._expandPOIRow(cityId);
     this._setActiveLocation(cityId);
-    this._activePoiIndex = 0;
+    this._activePoiIndex = cityOverview ? null : 0;
     this._updatePoiHighlight();
 
     // Track current target + POI for orbit
     if (result) {
       this._currentTarget = result.targetPosition;
-      this._currentPoi = CITY_POIS[cityId].pois[0];
+      this._currentPoi = cityOverview ? null : CITY_POIS[cityId].pois[0];
     }
     this._updateLocationMiniStatus();
   }
