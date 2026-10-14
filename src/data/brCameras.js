@@ -6,8 +6,9 @@
  * https://www.cetsp.com.br/consultas/cameras-cet.aspx
  * Highway camera catalogue: https://dersp.der.sp.gov.br/WebSite/Servicos/ServicosOnline/CamerasOnlineMapa.aspx
  */
-const CET='https://cameras.cetsp.com.br/View/Cam.aspx';
-const DER='https://dersp.der.sp.gov.br/WebSite/Servicos/ServicosOnline/CamerasOnlineMapa.aspx';
+import { PUBLIC_BRAZIL_APIS } from '../config/publicBrazilApis.js';
+const CET = PUBLIC_BRAZIL_APIS.cameras.cetSp;
+const DER = PUBLIC_BRAZIL_APIS.cameras.derSp;
 const cameras=[
  ['Ascendino Reis × Rua Pedro de Toledo','ascendino reis pedro de toledo'],
  ['Av. Brasil × Av. Brigadeiro Luís Antônio','brasil brigadeiro luis antonio'],
@@ -28,8 +29,8 @@ const entries=cameras.map(([name,street],idx)=>Object.freeze({
 const portals=[
  {id:'cet-sp-portal',state:'SP',city:'São Paulo',name:'Câmeras oficiais CET — São Paulo',url:CET,type:'portal',agency:'CET-SP',street:'principais vias paulistas'},
  {id:'der-sp-portal',state:'SP',city:'São Paulo',name:'Mapa oficial DER — rodovias do estado',url:DER,type:'portal',agency:'DER-SP',street:'rodovia estado de sao paulo sp'},
- {id:'rj-cor-portal',state:'RJ',city:'Rio de Janeiro',name:'Centro de Operações Rio — câmeras públicas',url:'https://cor.rio/',type:'portal',agency:'COR.Rio',street:'transito rio de janeiro'},
- {id:'bh-sumob-portal',state:'MG',city:'Belo Horizonte',name:'SUMOB — informação municipal',url:'https://portalsumob.pbh.gov.br/',type:'portal',agency:'Prefeitura de Belo Horizonte',street:'transito belo horizonte'}
+ {id:'rj-cor-portal',state:'RJ',city:'Rio de Janeiro',name:'Centro de Operações Rio — câmeras públicas',url:PUBLIC_BRAZIL_APIS.cameras.corRio,type:'portal',agency:'COR.Rio',street:'transito rio de janeiro'},
+ {id:'bh-sumob-portal',state:'MG',city:'Belo Horizonte',name:'SUMOB — informação municipal',url:PUBLIC_BRAZIL_APIS.cameras.sumobBh,type:'portal',agency:'Prefeitura de Belo Horizonte',street:'transito belo horizonte'}
 ];
 export const BRAZIL_CAMERA_SOURCES=Object.freeze([...portals,...entries]);
 export function normalizeBrText(value){
