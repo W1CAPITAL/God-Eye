@@ -6,7 +6,7 @@ const STREET = /^(?:vila|jardim|parque|conjunto|distrito|zona|viela|marginal|vil
 const BRAZIL = /(?:\bbrasil\b|\bbrazil\b|,\s*(?:AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b)/i;
 export function isBrazilianAddress(query) {
   const text = String(query ?? '').trim();
-  return text.length >= 5 && text.length <= 180 && (STREET.test(text) || BRAZIL.test(text));
+  return text.length >= 3 && text.length <= 180 && (STREET.test(text) || BRAZIL.test(text) || /,\s*(?:s[aã]o paulo|campinas|guarulhos|osasco|santo andr[eé]|s[aã]o bernardo do campo|rio de janeiro|belo horizonte)(?:\s*[-,]\s*[A-Za-z]{2})?\s*$/i.test(text) || /\s[-–]\s(?:SP|RJ|MG|PR|RS|SC|BA)\s*$/i.test(text));
 }
 export function createBrazilGeocoder({ fetchImpl = (...args) => fetch(...args), endpoint = '/api/geocode' } = {}) {
   const cache = new Map();
