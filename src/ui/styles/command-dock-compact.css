@@ -431,3 +431,39 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
     flex-basis: 8.5rem;
   }
 }
+
+/* Brasil accessibility and touch: readable controls, large targets and genuine scrolling. */
+#command-dock { --dock-side-compact: clamp(10.5rem, 14vw, 12rem); --dock-location-open: min(37rem, calc(100vw - 1.5rem)); }
+#command-dock .location-toolbar, #command-dock .panel-header { min-height: 2.5rem; }
+#command-dock .dock-tray-toggle, #command-dock #location-bar-toggle,
+#command-dock #control-panel-toggle { min-height: 2.55rem; min-width: 3rem; cursor: pointer; }
+#command-dock .location-toolbar-label, #command-dock .panel-title { font-size: .66rem; letter-spacing: .05rem; }
+#command-dock .dock-popover-content { max-width: calc(100vw - 1.2rem); max-height: min(74vh, 680px); overflow-y: auto; overscroll-behavior: contain; }
+#command-dock .location-pills { scrollbar-width: thin; scroll-behavior: auto; overscroll-behavior-x: contain; touch-action: pan-x; }
+#command-dock .location-pill, #command-dock .poi-pill, #command-dock .search-toggle-btn { min-height: 40px; font-size: .76rem; }
+#command-dock #location-search, #command-dock #location-search.expanded { min-height: 42px; font-size: .85rem; }
+#command-dock .location-search-wrap { flex: 1 1 200px; min-width: 145px; }
+#command-dock .poi-row-container.expanded { max-height: 105px; flex-wrap: wrap; overflow: auto; justify-content: flex-start; }
+#command-dock button, #command-dock input, #command-dock a { -webkit-tap-highlight-color: rgba(0,212,255,.2); }
+#command-dock button:focus-visible, #command-dock a:focus-visible { outline: 2px solid #4ce2ff; outline-offset: 2px; }
+#command-dock .br-services { display: flex; flex-direction: column; gap: .5rem; padding: .6rem .15rem .25rem; border-top: 1px solid rgba(100,188,214,.2); }
+#command-dock .br-services-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+#command-dock .br-service-link, #command-dock .br-service-button {
+ display: flex; align-items: center; justify-content: center; min-height: 41px; padding: .55rem .65rem;
+ border: 1px solid rgba(105,215,255,.5); border-radius: 7px; background: rgba(9,35,48,.92);
+ color: #d4f6ff; font: 600 .74rem/1.3 system-ui, sans-serif; text-decoration: none; text-align:center; cursor: pointer;
+}
+#command-dock .br-service-link:hover, #command-dock .br-service-button:hover { background: rgba(20,77,95,.92); }
+#command-dock .br-cameras-results { max-height: 240px; overflow: auto; border: 1px solid rgba(123,189,211,.22); border-radius: 8px; padding: .7rem; background: rgba(4,16,22,.96); color:#d5e7ed; font-size:.76rem; }
+#command-dock .br-cameras-results[hidden] { display: none!important; }
+#command-dock .br-cameras-results p { margin: 0 0 .55rem; line-height: 1.5; }
+#command-dock .br-camera-list { padding-left:1.4rem; }
+#command-dock .br-camera-list li { margin: .3rem 0; }
+#command-dock .br-source { display:flex; flex-direction:column; gap:.2rem; margin-top:.5rem; }
+#command-dock .br-source span { font-size:.71rem; color:#adc6d0; }
+@media (max-width: 720px) {
+ #command-dock { max-width: calc(100vw - .8rem); }
+ #command-dock .dock-popover-content { width: calc(100vw - 1.1rem); }
+ #command-dock .location-city-row { flex-wrap:wrap; }
+ #command-dock .location-pills { flex-basis:100%; }
+}
