@@ -1,5 +1,6 @@
 /** CEP lookup for Brazil. Postal geometry is approximate, never a rooftop. */
-const endpoint = 'https://brasilapi.com.br/api/cep/v2/';
+import { PUBLIC_BRAZIL_APIS } from '../config/publicBrazilApis.js';
+const endpoint = PUBLIC_BRAZIL_APIS.cep.brasilApiV2;
 const memo = new Map();
 export function parseCepQuery(input) {
   const match = /^(?:cep\s*[:\-]?\s*)?(\d{5})-?(\d{3})$/i.exec(String(input ?? '').trim());
