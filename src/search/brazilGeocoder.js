@@ -2,7 +2,7 @@
 import { normalizeGooglePlace } from './google.js';
 import { rankBrazilCandidates } from './brazilPrecision.js';
 
-const STREET = /^(?:r(?:ua)?\.?|av(?:enida)?\.?|travessa|alameda|estrada|rodovia|praça|praca|largo|viela|passagem|bairro|loteamento|quadra)\s+/i;
+const STREET = /^(?:vila|jardim|parque|conjunto|distrito|zona|viela|marginal|vila nova|r(?:ua)?\.?|av(?:enida)?\.?|travessa|alameda|estrada|rodovia|praça|praca|largo|viela|passagem|bairro|loteamento|quadra)\s+/i;
 const BRAZIL = /(?:\bbrasil\b|\bbrazil\b|,\s*(?:AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b)/i;
 export function isBrazilianAddress(query) {
   const text = String(query ?? '').trim();
