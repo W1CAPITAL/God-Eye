@@ -1,42 +1,57 @@
-/** Verified PUBLIC authority directories. Records are named catalog entries, NOT direct video streams. */
+/**
+ * Verified public camera *directory entries*. A link is not a promise of an
+ * active feed and none of these carries a made-up coordinate.
+ * São Paulo's published CET favorites:
+ * https://cameras.cetsp.com.br/View/Cam.aspx
+ * https://www.cetsp.com.br/consultas/cameras-cet.aspx
+ * Highway camera catalogue: https://dersp.der.sp.gov.br/WebSite/Servicos/ServicosOnline/CamerasOnlineMapa.aspx
+ */
 const CET='https://cameras.cetsp.com.br/View/Cam.aspx';
 const DER='https://dersp.der.sp.gov.br/WebSite/Servicos/ServicosOnline/CamerasOnlineMapa.aspx';
-const camera=(id,name,words)=>({id,state:'SP',city:'São Paulo',name,street:words,url:CET,type:'catalog-entry',agency:'CET-SP',publicDirectory:true,coordinatesVerified:false});
-export const BRAZIL_CAMERA_SOURCES=Object.freeze([
- {id:'cet-sp',state:'SP',city:'São Paulo',name:'CET · catálogo de câmeras da capital',street:'sao paulo capital',url:CET,type:'regional-directory',agency:'CET-SP',publicDirectory:true},
- {id:'der-sp',state:'SP',city:'Estado de São Paulo',name:'DER-SP · câmeras rodoviárias',street:'rodovia estradas sao paulo',url:DER,type:'regional-directory',agency:'DER-SP',publicDirectory:true},
- camera('cet-ascendino','Ascendino Reis × Rua Pedro de Toledo','ascendino reis pedro de toledo'),
- camera('cet-brasil-brigadeiro','Avenida Brasil × Av. Brigadeiro Luís Antônio','avenida brasil brigadeiro luis antonio'),
- camera('cet-brasil-schaumann','Avenida Brasil × Av. Henrique Schaumann','avenida brasil henrique schaumann'),
- camera('cet-brigadeiro-santos','Av. Brigadeiro Luís Antônio × Al. Santos','brigadeiro luis antonio alameda santos'),
- camera('cet-cidade-jardim','Av. Cidade Jardim × Av. Nove de Julho','cidade jardim nove julho'),
- camera('cet-consolacao','Rua da Consolação × Rua Caio Prado','consolacao caio prado'),
- camera('cet-helio','Av. Hélio Pellegrino × Rua Diogo Jácome','helio pellegrino diogo jacome'),
- camera('cet-ibirapuera','Av. Ibirapuera × Rua Ipê','ibirapuera ipe'),
- camera('cet-iguatemi','Av. Iguatemi × Av. Brigadeiro Faria Lima','iguatemi brigadeiro faria lima'),
- camera('cet-paulista-brigadeiro','Av. Paulista × Av. Brigadeiro Luís Antônio','paulista brigadeiro luis antonio'),
- camera('cet-paulista-consolacao','Av. Paulista × Metrô Consolação','paulista consolacao'),
- {id:'bh-sumob',state:'MG',city:'Belo Horizonte',name:'SUMOB · câmeras de trânsito na área central',street:'belo horizonte centro',url:'https://portalsumob.pbh.gov.br/',type:'regional-directory',agency:'Prefeitura de Belo Horizonte',publicDirectory:true},
- {id:'rj-cor',state:'RJ',city:'Rio de Janeiro',name:'COR.Rio · informações e acesso pelo aplicativo oficial',street:'rio de janeiro cameras cor rio',url:'https://cor.rio/',type:'regional-directory',agency:'Prefeitura do Rio de Janeiro',publicDirectory:true}
-]);
-export function normalizeBrText(value) {
- return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^\p{L}\p{N}]/gu,' ').replace(/\s+/g,' ').trim();
+const cameras=[
+ ['Ascendino Reis × Rua Pedro de Toledo','ascendino reis pedro de toledo'],
+ ['Av. Brasil × Av. Brigadeiro Luís Antônio','brasil brigadeiro luis antonio'],
+ ['Av. Brasil × Av. Henrique Schaumann','brasil henrique schaumann'],
+ ['Av. Brigadeiro Luís Antônio × Alameda Santos','brigadeiro luis antonio alameda santos'],
+ ['Av. Cidade Jardim × Av. Nove de Julho','cidade jardim nove de julho'],
+ ['Rua da Consolação × Rua Caio Prado','consolacao caio prado'],
+ ['Av. Hélio Pellegrino × Rua Diogo Jácome','helio pellegrino diogo jacome'],
+ ['Av. Ibirapuera × Rua Ipê','ibirapuera ipe'],
+ ['Av. Iguatemi × Av. Brigadeiro Faria Lima','iguatemi brigadeiro faria lima'],
+ ['Av. Paulista × Av. Brigadeiro Luís Antônio','paulista brigadeiro luis antonio'],
+ ['Av. Paulista × Metrô Consolação','paulista metro consolacao'],
+];
+const entries=cameras.map(([name,street],idx)=>Object.freeze({
+ id:'cet-'+(idx+1),state:'SP',city:'São Paulo',name,
+ url:CET,type:'verified-directory-entry',agency:'CET-SP',street
+}));
+const portals=[
+ {id:'cet-sp-portal',state:'SP',city:'São Paulo',name:'Câmeras oficiais CET — São Paulo',url:CET,type:'portal',agency:'CET-SP',street:'principais vias paulistas'},
+ {id:'der-sp-portal',state:'SP',city:'São Paulo',name:'Mapa oficial DER — rodovias do estado',url:DER,type:'portal',agency:'DER-SP',street:'rodovia estado de sao paulo sp'},
+ {id:'rj-cor-portal',state:'RJ',city:'Rio de Janeiro',name:'Centro de Operações Rio — câmeras públicas',url:'https://cor.rio/',type:'portal',agency:'COR.Rio',street:'transito rio de janeiro'},
+ {id:'bh-sumob-portal',state:'MG',city:'Belo Horizonte',name:'SUMOB — informação municipal',url:'https://portalsumob.pbh.gov.br/',type:'portal',agency:'Prefeitura de Belo Horizonte',street:'transito belo horizonte'}
+];
+export const BRAZIL_CAMERA_SOURCES=Object.freeze([...portals,...entries]);
+export function normalizeBrText(value){
+  return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^\p{L}\p{N}]/gu,' ').replace(/\s+/g,' ').trim();
 }
-const STOPWORDS=new Set(['rua','avenida','av','praca','bairro','cidade','estado','brasil','sao','paulo','rio','janeiro','belo','horizonte','rodovia']);
-export function cityCameraRegion(query){
- const s=' '+normalizeBrText(query)+' ';
- if(/\b(sao paulo|sp)\b/.test(s)||/\b(paulista|pinheiros|ibirapuera|consolacao|faria lima|tiete|jardins|vila mariana|morumbi|itaquera|santana|santo amaro)\b/.test(s))return 'SP';
- if(/\b(rio de janeiro|rj|copacabana|ipanema|barra da tijuca)\b/.test(s))return 'RJ';
- if(/\b(belo horizonte|mg|savassi)\b/.test(s))return 'MG';
- return null;
-}
-export function findPublicBrazilCameras(query) {
- const search=normalizeBrText(query),region=cityCameraRegion(query);
- if(!search||!region)return [];
- const candidates=BRAZIL_CAMERA_SOURCES.filter(record=>record.state===region);
- const tokens=search.split(' ').filter(word=>word.length>=3&&!STOPWORDS.has(word));
- const detailed=candidates.filter(record=>record.type==='catalog-entry').map(record=>({
-   record, matches:tokens.filter(token=>normalizeBrText(record.street+' '+record.name).split(' ').includes(token)).length
- })).filter(entry=>tokens.length===0||entry.matches>0).sort((a,b)=>b.matches-a.matches).map(entry=>entry.record);
- return [...candidates.filter(record=>record.type==='regional-directory'),...detailed];
+const STATES={SP:/\b(?:sp|sao paulo|paulista|pinheiros|consolacao|faria lima|santana|jardins|ibirapuera|tiete|santo amaro|itaquera|moema|centro de sao paulo)\b/, RJ:/\b(?:rj|rio de janeiro|copacabana|ipanema|barra da tijuca)\b/, MG:/\b(?:mg|belo horizonte|contagem|savassi)\b/};
+const GENERIC=new Set(['avenida','rua','estado','cidade','bairro','paulo','sao','brasil','centro','perto','cameras','camera','rodovia','regiao','local']);
+export function findPublicBrazilCameras(q){
+  const search=normalizeBrText(q);
+  const selected=Object.keys(STATES).filter(state=>STATES[state].test(search));
+  const region=selected.length===1?selected[0]:null;
+  // No match on an exact road does not mean the next camera is "nearby".
+  const significant=search.split(' ').filter(word=>word.length>3&&!GENERIC.has(word));
+  const candidates=BRAZIL_CAMERA_SOURCES.filter(item=>!region||item.state===region);
+  const scored=candidates.map(item=>{
+    const normalized=normalizeBrText(item.name+' '+item.street+' '+item.city);
+    const relevance=significant.filter(word=>normalized.split(' ').includes(word)).length;
+    return {...item,relevance};
+  });
+  // Show precise, source-published entries only when at least one street token matches.
+  // Always retain government catalogues so users can search a different road there.
+  const entries=scored.filter(item=>item.type!=='portal'&&item.relevance>0)
+    .sort((a,b)=>b.relevance-a.relevance||a.name.localeCompare(b.name,'pt-BR'));
+  return [...entries,...scored.filter(item=>item.type==='portal')];
 }
