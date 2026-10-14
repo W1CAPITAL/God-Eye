@@ -40,16 +40,15 @@ export function locationMiniStatus({
   currentPoi = null,
   searchedLabel = '',
 } = {}) {
-  const segments = addressSegments(searchedLabel);
-  if (segments.length) return { city: '📍 ' + segments[0], poi: segments.length > 1 ? segments.slice(1).join(', ') : 'Endereço pesquisado' };
   if (city?.name) {
-    const fallbackPoi = null; // Do not claim a point near Sé just because city is São Paulo.
+    const fallbackPoi = city.name === 'São Paulo' ? null : city.pois?.[0] || null; // No fake "near Sé" in a full São Paulo city view.
     return {
       city: `📍 ${city.name}`,
       poi: currentPoi?.name || fallbackPoi?.name || '--',
     };
   }
 
+  const segments = addressSegments(searchedLabel);
   if (segments.length) {
     return {
       city: `📍 ${segments[0]}`,
