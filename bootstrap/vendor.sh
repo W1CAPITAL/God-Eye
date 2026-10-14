@@ -9,10 +9,18 @@ git -C "$TEMP" init -q
 git -C "$TEMP" remote add origin "$UPSTREAM"
 git -C "$TEMP" fetch --depth 1 origin "$PIN"
 git -C "$TEMP" checkout -q FETCH_HEAD
-# Import the complete tracked original while preserving W1CAPITAL's cloud adapters.
-git -C "$TEMP" archive HEAD | tar -x -C . --exclude='./.github/*' --exclude='./bootstrap/*' --exclude='./api/*' --exclude='./vercel.json' --exclude='./README-BR.md' --exclude='./src/search/brazilGeocoder.js' --exclude='./src/search/brazilGeocoder.test.mjs'
+# Keep W1CAPITAL cloud integrations and omit upstream GitHub Actions.
+git -C "$TEMP" archive HEAD | tar -x -C . \
+  --exclude='.github/workflows' --exclude='.github/workflows/*' \
+  --exclude='bootstrap' --exclude='bootstrap/*' \
+  --exclude='api' --exclude='api/*' \
+  --exclude='vercel.json' --exclude='README-BR.md' \
+  --exclude='src/search/brazilGeocoder.js' --exclude='src/search/brazilGeocoder.test.mjs' \
+  --exclude='src/search/cepGeocoder.js' --exclude='src/search/cepGeocoder.test.mjs'
+# Defensive cleanup if an upstream workflow escaped the tar filter.
+find .github/workflows -maxdepth 1 -type f ! -name 'vendor.yml' -delete
 node bootstrap/patch.mjs
 printf 'Upstream %s\n' "$PIN" > .god-eye-imported
 git add -A
-git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'feat: import Gods Eye View and optimize Brazilian address search'
+git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'feat: import Gods Eye View and optimize Brazilian search'
 git push origin HEAD:main
