@@ -1,4 +1,5 @@
 import './brExplorer.css';
+import {SP_DISTRICTS} from '../data/spDistricts.js';
 
 /**
  * Lightweight, accessible São Paulo / Brazil map companion.
@@ -25,7 +26,8 @@ export function installBrazilExplorer({doc=document,fetchImpl=fetch}={}) {
  const cameras=button('📷 Câmeras públicas','br-tab active');
  const google=button('◉ Google Maps · Locais','br-tab');
  cameras.setAttribute('aria-pressed','true');google.setAttribute('aria-pressed','false');
- tabs.append(cameras,google);
+ const districts=button('◈ 96 distritos SP','br-tab');districts.setAttribute('aria-pressed','false');
+ tabs.append(cameras,google,districts);
  const form=doc.createElement('form');form.className='br-explorer-search';
  const input=doc.createElement('input');input.type='search';input.name='q';input.maxLength=120;input.value='São Paulo';input.placeholder='Rua, avenida, bairro ou cidade';input.setAttribute('aria-label','Pesquisar locais do Brasil');
  const submit=button('Pesquisar','br-explorer-submit');submit.type='submit';form.append(input,submit);
@@ -52,7 +54,27 @@ export function installBrazilExplorer({doc=document,fetchImpl=fetch}={}) {
    if(credit){const c=doc.createElement('small');c.textContent=credit;article.appendChild(c);}
    results.appendChild(article);
  }
+ function showDistricts(){
+   const q=input.value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
+   results.replaceChildren();notice.textContent='96 distritos oficiais de São Paulo. A localização é consultada pelo nome real, não por coordenadas inventadas.';
+   source.textContent='Fonte: Prefeitura de São Paulo · Tabela oficial de distritos';
+   let total=0;
+   for(const name of SP_DISTRICTS){
+     if(q&&!name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').includes(q))continue;
+     const chip=button(name,'br-district-chip');chip.title='Localizar '+name+' no mapa 3D';
+     chip.addEventListener('click',()=>{
+       const locationInput=doc.getElementById('location-search');
+       if(!locationInput){say('Barra de navegação ainda não foi carregada.');return;}
+       locationInput.value=name+', São Paulo, SP';
+       locationInput.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+       setOpen(false);
+     });
+     results.appendChild(chip);total++;
+   }
+   if(!total)say('Nenhum distrito encontrado.');
+ }
  async function search(){
+   if(kind==='districts'){showDistricts();return;}
    const q=input.value.trim();
    if(q.length<2){say('Informe uma rua, bairro ou cidade.');return;}
    controller?.abort();controller=new AbortController();const current=++seq;
@@ -80,8 +102,10 @@ export function installBrazilExplorer({doc=document,fetchImpl=fetch}={}) {
    finally{if(current===seq){submit.disabled=false;submit.textContent='Pesquisar';}}
  }
  function changeTab(next){
-   kind=next;cameras.classList.toggle('active',next==='cameras');google.classList.toggle('active',next==='google');
+   kind=next;cameras.classList.toggle('active',next==='cameras');google.classList.toggle('active',next==='google');districts.classList.toggle('active',next==='districts');
    cameras.setAttribute('aria-pressed',String(next==='cameras'));google.setAttribute('aria-pressed',String(next==='google'));
+   districts.setAttribute('aria-pressed',String(next==='districts'));
+   input.value=next==='districts'?'':'São Paulo';input.placeholder=next==='districts'?'Filtrar 96 distritos...':'Rua, avenida, bairro ou cidade';
    void search();
  }
  function setOpen(open){
@@ -93,6 +117,8 @@ export function installBrazilExplorer({doc=document,fetchImpl=fetch}={}) {
  close.addEventListener('click',()=>setOpen(false));
  cameras.addEventListener('click',()=>changeTab('cameras'));
  google.addEventListener('click',()=>changeTab('google'));
+ districts.addEventListener('click',()=>changeTab('districts'));
+ input.addEventListener('input',()=>{if(kind==='districts')showDistricts();});
  form.addEventListener('submit',(event)=>{event.preventDefault();void search();});
  doc.addEventListener('keydown',(event)=>{if(event.key==='Escape'&&!dialog.hidden)setOpen(false);});
  threeD.addEventListener('click',()=>{
