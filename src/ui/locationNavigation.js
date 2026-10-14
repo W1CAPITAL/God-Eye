@@ -138,6 +138,11 @@ export class LocationNavigation {
         statusPoi: this._locationMiniPoi,
       },
       cities: CITY_POIS,
+      getMapLocation: () => {
+        const carto = this.viewer?.camera?.positionCartographic;
+        if (!carto) return null;
+        return { lat: Cesium.Math.toDegrees(carto.latitude), lng: Cesium.Math.toDegrees(carto.longitude) };
+      },
       getExpandedCity: () => this._expandedCityId,
       onCity: (id) => this._onCityPillClick(id),
       onPoi: (id, index) => this._onPoiClick(id, index),
