@@ -44,6 +44,8 @@ export function createPlaceSearch({
             result.fallbackUsed = index > 0;
             break;
           }
+          // A definitive Brazilian address miss must not fall back to an unrelated world landmark.
+          if (next.stop === true) break;
         }
       } catch (error) {
         lifetime?.throwIfAborted();
