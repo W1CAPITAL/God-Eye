@@ -120,11 +120,13 @@ export function createApplicationViewer({ container, creditContainer }) {
     infoBox: false,
     baseLayer: false,
     creditContainer,
-    msaaSamples: 4,
+    msaaSamples: (globalThis.navigator?.hardwareConcurrency || 8) <= 4 ? 1 : 2,
     contextOptions: { webgl: { preserveDrawingBuffer: true } },
   });
   try {
-    viewer.targetFrameRate = 60;
+    viewer.targetFrameRate = (globalThis.navigator?.hardwareConcurrency || 8) <= 4 ? 40 : 60;
+    // Cap costly retina framebuffer pixels without disabling actual textured 3D geometry.
+    viewer.resolutionScale = (globalThis.window?.devicePixelRatio || 1) >= 1.8 ? 0.78 : 1;
     // Before any tile builds a draw command: Cesium's per-vertex model
     // atmosphere fails to LINK on Apple's Metal backend and kills the
     // render loop. See app/atmosphereCompat.js.
