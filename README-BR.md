@@ -26,3 +26,21 @@ Créditos e licença original devem ser mantidos. Consulte o arquivo `LICENSE` e
 `Mahanaicoach/google-maps-scraper-kit`, `omkarcloud/google-maps-scraper` e `gosom/google-maps-scraper` são coletores independentes, não parte das APIs oficiais do Google Maps; importar seus navegadores/robôs para funções serverless aumentaria consumo e pode criar problemas com termos de uso e bloqueios. Em vez disso, foram adotadas as APIs oficiais do Google para pesquisas no aplicativo. `googlemaps` é o ecossistema de bibliotecas Google Maps, e `dsdanielpark/Bard-API` não é necessário para geocodificar endereços.
 
 **Privacidade e segurança:** nenhuma câmera privada, credencial de fornecedor, cookie de conta Google ou imagens de câmeras sem autorização são coletados. Configure as chaves apenas na Vercel; não faça commit de `.env`. Os resultados da pesquisa Google devem respeitar os termos de atribuição e exibição do Google.
+
+## APIs públicas instaladas no próprio GitHub
+
+Os **endereços públicos** das APIs estão versionados em [`src/config/publicBrazilApis.js`](src/config/publicBrazilApis.js) e são importados pelas integrações. Não precisam de chave na Vercel. Alterar o catálogo é suficiente para atualizar as URLs usadas pelo aplicativo.
+
+| Serviço | Aplicação | Requer chave? |
+| --- | --- | --- |
+| [BrasilAPI CEP v2](https://brasilapi.com.br/docs) | Consulta postal com geolocalização quando fornecida | Não |
+| [ViaCEP](https://viacep.com.br/) | Fonte pública de endereços/CEP, cadastrada para integrações | Não |
+| [IBGE Localidades](https://servicodados.ibge.gov.br/api/docs/localidades) | Novo painel **Municípios SP · IBGE** com pesquisa paginada; consulta à lista oficial de municípios paulistas por `/api/sp-municipios` | Não |
+| [Nominatim / OpenStreetMap](https://operations.osmfoundation.org/policies/nominatim/) | Geocodificação pública de ruas e localidades | Não; uso limitado |
+| CET-SP / DER-SP / COR.Rio / SUMOB | Links para diretórios públicos de câmeras de trânsito | Não para consultar os portais |
+
+**Não confundir disponibilizar URLs com ter uma base geográfica completa:** o IBGE fornece os nomes oficiais dos municípios, não coordenadas de cada rua. Para navegar a um município, o mapa faz uma geocodificação separada. Os portais de câmeras não garantem streaming embutido.
+
+Respeite as políticas dos fornecedores: a BrasilAPI proíbe varredura sistemática de CEPs; o Nominatim público exige atribuição e no máximo **1 requisição por segundo no conjunto da aplicação**, que uma função serverless distribuída não consegue assegurar sozinha. Para tráfego maior, use serviço geográfico próprio ou contratado.
+
+APIs autenticadas, inclusive **Google Places**, **Google Maps Tiles** e **Cesium ion**, ainda exigem credenciais válidas e restrições de uso apropriadas. Nunca publique chaves privadas, `.env` ou tokens pessoais no GitHub.
