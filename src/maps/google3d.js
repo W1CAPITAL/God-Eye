@@ -1,4 +1,7 @@
 const clean = (value) => String(value || '').trim();
+// Avoid allocating 1.5 GiB of texture cache on ordinary browsers.
+const constrained = () => (globalThis.navigator?.deviceMemory || 8) <= 4 || (globalThis.navigator?.hardwareConcurrency || 8) <= 4;
+const tileOptions = () => ({cacheBytes:(constrained()?256:512)*1048576,maximumCacheOverflowBytes:128*1048576,maximumScreenSpaceError:constrained()?19:12,asynchronouslyLoadImagery:true});
 
 /**
  * Decide which map provider can deliver the best startup experience.
@@ -77,7 +80,7 @@ export function createGoogleDirectTileset(Cesium, key) {
   // Tiles keep drawing their own texture while draped weather loads.
   return Cesium.createGooglePhotorealistic3DTileset(
     { key, onlyUsingWithGoogleGeocoder: true },
-    { asynchronouslyLoadImagery: true },
+    tileOptions(),
   );
 }
 
