@@ -30,7 +30,7 @@ export default async function handler(req,res) {
     id:String(p.id||'').slice(0,140),
     name:String(p.displayName?.text||'').slice(0,180),
     address:String(p.formattedAddress||'').slice(0,260),
-    mapsUrl:typeof p.googleMapsUri==='string'&&p.googleMapsUri.startsWith('https://www.google.com/maps/')?p.googleMapsUri:null,
+    mapsUrl:typeof p.googleMapsUri==='string'&&/^https:\/\/(?:www\.google\.com\/maps\/|maps\.google\.com\/)/.test(p.googleMapsUri)?p.googleMapsUri:null,
     // These coordinates are NOT exported to Cesium; Google display terms apply.
     type:String(p.primaryType||'').slice(0,70)
   })).filter(p=>p.id&&p.name);
