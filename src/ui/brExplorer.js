@@ -27,7 +27,8 @@ export function installBrazilExplorer({doc=document,fetchImpl=fetch}={}) {
  const google=button('◉ Google Maps · Locais','br-tab');
  cameras.setAttribute('aria-pressed','true');google.setAttribute('aria-pressed','false');
  const districts=button('◈ 96 distritos SP','br-tab');districts.setAttribute('aria-pressed','false');
- tabs.append(cameras,google,districts);
+ const municipalities=button('⌂ Municípios SP · IBGE','br-tab');municipalities.setAttribute('aria-pressed','false');
+ tabs.append(cameras,google,districts,municipalities);
  const form=doc.createElement('form');form.className='br-explorer-search';
  const input=doc.createElement('input');input.type='search';input.name='q';input.maxLength=120;input.value='São Paulo';input.placeholder='Rua, avenida, bairro ou cidade';input.setAttribute('aria-label','Pesquisar locais do Brasil');
  const submit=button('Pesquisar','br-explorer-submit');submit.type='submit';form.append(input,submit);
@@ -40,7 +41,7 @@ export function installBrazilExplorer({doc=document,fetchImpl=fetch}={}) {
  const sourceHint=doc.createElement('span');sourceHint.textContent='3D real exige chave Maps Tiles ou Cesium ion';
  footer.append(threeD,sourceHint);dialog.append(heading,tabs,form,notice,results,source,footer);
  doc.body.append(launcher,dialog);
- let kind='cameras',controller=null,seq=0;
+ let kind='cameras',controller=null,seq=0,spOffset=0;
  const say=text=>{results.replaceChildren();const p=doc.createElement('p');p.className='br-explorer-message';p.textContent=text;results.appendChild(p);};
  function item(name,description,url,credit){
    const article=doc.createElement('article');article.className='br-explorer-item';
@@ -76,12 +77,13 @@ export function installBrazilExplorer({doc=document,fetchImpl=fetch}={}) {
  async function search(){
    if(kind==='districts'){showDistricts();return;}
    const q=input.value.trim();
-   if(q.length<2){say('Informe uma rua, bairro ou cidade.');return;}
+   if(kind!=='municipios' && q.length<2){say('Informe uma rua, bairro ou cidade.');return;}
    controller?.abort();controller=new AbortController();const current=++seq;
    submit.disabled=true;submit.textContent='Buscando…';say('Consultando as fontes…');
    try{
-     const endpoint=kind==='cameras'?'/api/public-cameras':'/api/maps-places';
-     const response=await fetchImpl(endpoint+'?q='+encodeURIComponent(q),{signal:controller.signal});
+     const endpoint=kind==='cameras'?'/api/public-cameras':kind==='municipios'?'/api/sp-municipios':'/api/maps-places';
+     const requestUrl=endpoint+'?q='+encodeURIComponent(q)+(kind==='municipios'?'&offset='+spOffset:'');
+     const response=await fetchImpl(requestUrl,{signal:controller.signal});
      if(!response.ok)throw new Error('HTTP '+response.status);
      const data=await response.json();if(current!==seq)return;
      results.replaceChildren();
@@ -90,6 +92,30 @@ export function installBrazilExplorer({doc=document,fetchImpl=fetch}={}) {
        source.textContent='Portais oficiais · CET-SP · DER-SP · SUMOB · Prefeitura do Rio';
        for(const record of data.sources||[])item(record.name,record.agency+' · '+record.city+'/'+record.state+' · consultar no portal',record.url);
        if(!data.sources?.length)say('Nenhum portal oficial catalogado para esta região.');
+     } else if (kind==='municipios') {
+       notice.textContent='Municípios oficiais do estado de São Paulo (IBGE). A pesquisa de cada município é feita pelo nome, sem coordenadas inventadas.';
+       source.textContent='Fonte: IBGE · API pública de Localidades';
+       const found=Array.isArray(data.municipalities)?data.municipalities:[];
+       for(const city of found) {
+         const chip=button(city.name+' · SP','br-district-chip');
+         chip.title='Localizar '+city.name+' no mapa';
+         chip.addEventListener('click',()=>{
+           const locationInput=doc.getElementById('location-search');
+           if(!locationInput){say('Barra de navegação ainda não foi carregada.');return;}
+           locationInput.value=city.name+', São Paulo, Brasil';
+           locationInput.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+           setOpen(false);
+         });
+         results.appendChild(chip);
+       }
+       if(!found.length){say('Nenhum município encontrado.');}
+       const nav=doc.createElement('div');nav.className='br-explorer-pages';
+       const count=doc.createElement('small');count.textContent='Exibindo '+(found.length?spOffset+1:0)+'–'+(spOffset+found.length)+' de '+(data.total||0)+' municípios';
+       const prev=button('← Anterior','br-district-chip');prev.disabled=spOffset<=0;
+       const next=button('Próximos →','br-district-chip');next.disabled=spOffset+found.length>=(data.total||0);
+       prev.addEventListener('click',()=>{spOffset=Math.max(0,spOffset-40);void search();});
+       next.addEventListener('click',()=>{spOffset+=40;void search();});
+       nav.append(prev,count,next);results.appendChild(nav);
      } else {
        notice.textContent='Resultados oficiais do Google Maps, com atribuição. Clique para visualizar no próprio Google Maps.';
        source.textContent='Dados e nomes de locais © Google Maps';
@@ -102,10 +128,12 @@ export function installBrazilExplorer({doc=document,fetchImpl=fetch}={}) {
    finally{if(current===seq){submit.disabled=false;submit.textContent='Pesquisar';}}
  }
  function changeTab(next){
-   kind=next;cameras.classList.toggle('active',next==='cameras');google.classList.toggle('active',next==='google');districts.classList.toggle('active',next==='districts');
+   kind=next;spOffset=0;cameras.classList.toggle('active',next==='cameras');google.classList.toggle('active',next==='google');districts.classList.toggle('active',next==='districts');municipalities.classList.toggle('active',next==='municipios');
    cameras.setAttribute('aria-pressed',String(next==='cameras'));google.setAttribute('aria-pressed',String(next==='google'));
    districts.setAttribute('aria-pressed',String(next==='districts'));
-   input.value=next==='districts'?'':'São Paulo';input.placeholder=next==='districts'?'Filtrar 96 distritos...':'Rua, avenida, bairro ou cidade';
+   municipalities.setAttribute('aria-pressed',String(next==='municipios'));
+   input.value=next==='districts'||next==='municipios'?'':'São Paulo';
+   input.placeholder=next==='districts'?'Filtrar 96 distritos...':next==='municipios'?'Filtrar municípios de São Paulo...':'Rua, avenida, bairro ou cidade';
    void search();
  }
  function setOpen(open){
@@ -118,7 +146,8 @@ export function installBrazilExplorer({doc=document,fetchImpl=fetch}={}) {
  cameras.addEventListener('click',()=>changeTab('cameras'));
  google.addEventListener('click',()=>changeTab('google'));
  districts.addEventListener('click',()=>changeTab('districts'));
- input.addEventListener('input',()=>{if(kind==='districts')showDistricts();});
+ municipalities.addEventListener('click',()=>changeTab('municipios'));
+ input.addEventListener('input',()=>{if(kind==='districts')showDistricts();if(kind==='municipios')spOffset=0;});
  form.addEventListener('submit',(event)=>{event.preventDefault();void search();});
  doc.addEventListener('keydown',(event)=>{if(event.key==='Escape'&&!dialog.hidden)setOpen(false);});
  threeD.addEventListener('click',()=>{
