@@ -53,6 +53,14 @@ export async function loadPhotorealisticTileset(
   for (const attempt of attempts) {
     try {
       const tileset = await attempt.create();
+      // Real Google 3D Tiles remain enabled; cap GPU/cache pressure on ordinary laptops.
+      const memory = Number(globalThis.navigator?.deviceMemory || 8);
+      const cores = Number(globalThis.navigator?.hardwareConcurrency || 8);
+      const constrained = memory <= 4 || cores <= 4;
+      tileset.maximumScreenSpaceError = constrained ? 16 : 9;
+      tileset.dynamicScreenSpaceError = true;
+      tileset.cacheBytes = (constrained ? 160 : 320) * 1024 * 1024;
+      tileset.maximumCacheOverflowBytes = (constrained ? 96 : 160) * 1024 * 1024;
       return { tileset, route: attempt.route, errors };
     } catch (error) {
       errors.push(error instanceof Error ? error : new Error(String(error)));
@@ -98,8 +106,8 @@ export async function createGoogleTokenTileset(Cesium, tokens) {
   });
   // The settings Cesium's Google helper applies to the key route.
   return Cesium.Cesium3DTileset.fromUrl(resource, {
-    cacheBytes: 1536 * 1024 * 1024,
-    maximumCacheOverflowBytes: 1024 * 1024 * 1024,
+    cacheBytes: 320 * 1024 * 1024,
+    maximumCacheOverflowBytes: 160 * 1024 * 1024,
     enableCollision: true,
     // Tiles keep drawing their own texture while draped weather loads.
     asynchronouslyLoadImagery: true,
@@ -121,8 +129,8 @@ export async function createGoogleIonTileset(
   signal?.throwIfAborted();
   // Match the installed SDK's Google helper rendering/cache defaults.
   return Cesium.Cesium3DTileset.fromUrl(resource, {
-    cacheBytes: 1536 * 1024 * 1024,
-    maximumCacheOverflowBytes: 1024 * 1024 * 1024,
+    cacheBytes: 320 * 1024 * 1024,
+    maximumCacheOverflowBytes: 160 * 1024 * 1024,
     enableCollision: true,
     // Tiles keep drawing their own texture while draped weather loads.
     asynchronouslyLoadImagery: true,
